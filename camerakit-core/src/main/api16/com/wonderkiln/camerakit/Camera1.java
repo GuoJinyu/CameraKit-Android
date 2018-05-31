@@ -888,12 +888,12 @@ public class Camera1 extends CameraImpl {
                     invertPreviewSizes ? getPreviewResolution().getWidth() : getPreviewResolution().getHeight()
             );
 
-            final int[] previewFpsRange = selectPreviewFpsRange(mCamera, mRequestedFps);
-            if (previewFpsRange != null) {
-                mCameraParameters.setPreviewFpsRange(
-                        previewFpsRange[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
-                        previewFpsRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
-            }
+//            final int[] previewFpsRange = selectPreviewFpsRange(mCamera, mRequestedFps);
+//            if (previewFpsRange != null) {
+//                mCameraParameters.setPreviewFpsRange(
+//                        previewFpsRange[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
+//                        previewFpsRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
+//            }
 
             try {
                 mCamera.setParameters(mCameraParameters);
