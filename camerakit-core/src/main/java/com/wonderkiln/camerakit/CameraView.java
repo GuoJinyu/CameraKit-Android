@@ -451,6 +451,10 @@ public class CameraView extends CameraViewLayout {
         mCameraImpl.captureImage(new CameraImpl.ImageCapturedCallback() {
             @Override
             public void imageCaptured(byte[] jpeg) {
+                if (jpeg == null) {
+                    callback.callback(null);
+                    return;
+                }
                 PostProcessor postProcessor = new PostProcessor(jpeg);
                 postProcessor.setJpegQuality(mJpegQuality);
                 postProcessor.setFacing(mFacing);

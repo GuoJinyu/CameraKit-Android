@@ -419,78 +419,84 @@ public class Camera1 extends CameraImpl {
     void captureImage(final ImageCapturedCallback callback) {
         if (!mShowingPreview) {
             //If camera hasn't start preview, then return.
+            callback.imageCaptured(null);
             return;
         }
-        switch (mMethod) {
-            case METHOD_STANDARD:
-                synchronized (mCameraLock) {
-                    // Null check required for camera here as is briefly null when View is detached
-                    if (!capturingImage && mCamera != null) {
+        try {
+            switch (mMethod) {
+                case METHOD_STANDARD:
+                    synchronized (mCameraLock) {
+                        // Null check required for camera here as is briefly null when View is detached
+                        if (!capturingImage && mCamera != null) {
 
-                        // Set boolean to wait for image callback
-                        capturingImage = true;
+                            // Set boolean to wait for image callback
+                            capturingImage = true;
 
-                        // Set the captureRotation right before taking a picture so it's accurate
-                        int captureRotation = calculateCaptureRotation();
-                        mCameraParameters.setRotation(captureRotation);
-                        setParameters(mCameraParameters);
+                            // Set the captureRotation right before taking a picture so it's accurate
+                            int captureRotation = calculateCaptureRotation();
+                            mCameraParameters.setRotation(captureRotation);
+                            setParameters(mCameraParameters);
 
-                        mCamera.takePicture(null, null, null,
-                                new Camera.PictureCallback() {
-                                    @Override
-                                    public void onPictureTaken(byte[] data, Camera camera) {
-                                        callback.imageCaptured(data);
+                            mCamera.takePicture(null, null, null,
+                                    new Camera.PictureCallback() {
+                                        @Override
+                                        public void onPictureTaken(byte[] data, Camera camera) {
+                                            callback.imageCaptured(data);
 
-                                        // Reset capturing state to allow photos to be taken
-                                        capturingImage = false;
+                                            // Reset capturing state to allow photos to be taken
+                                            capturingImage = false;
 
-                                        synchronized (mCameraLock) {
-                                            if (isCameraOpened()) {
-                                                try {
-                                                    stop();
-                                                    start();
-                                                } catch (Exception e) {
-                                                    notifyErrorListener(e);
+                                            synchronized (mCameraLock) {
+                                                if (isCameraOpened()) {
+                                                    try {
+                                                        stop();
+                                                        start();
+                                                    } catch (Exception e) {
+                                                        notifyErrorListener(e);
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                });
-                    } else {
-                        Log.w(TAG, "Unable, waiting for picture to be taken");
-                    }
-                    break;
-                }
-
-            case METHOD_STILL:
-                synchronized (mCameraLock) {
-                    mCamera.setOneShotPreviewCallback(new Camera.PreviewCallback() {
-                        @Override
-                        public void onPreviewFrame(byte[] data, Camera camera) {
-                            Camera.Parameters parameters = camera.getParameters();
-                            int width = parameters.getPreviewSize().width;
-                            int height = parameters.getPreviewSize().height;
-                            int rotation = calculateCaptureRotation();
-
-                            YuvOperator yuvOperator = new YuvOperator(data, width, height);
-                            yuvOperator.rotate(rotation);
-                            data = yuvOperator.getYuvData();
-
-                            int yuvOutputWidth = width;
-                            int yuvOutputHeight = height;
-                            if (rotation == 90 || rotation == 270) {
-                                yuvOutputWidth = height;
-                                yuvOutputHeight = width;
-                            }
-
-                            YuvImage yuvImage = new YuvImage(data, parameters.getPreviewFormat(), yuvOutputWidth, yuvOutputHeight, null);
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
-                            callback.imageCaptured(out.toByteArray());
+                                    });
+                        } else {
+                            Log.w(TAG, "Unable, waiting for picture to be taken");
+                            callback.imageCaptured(null);
                         }
-                    });
-                    break;
-                }
+                        break;
+                    }
+                case METHOD_STILL:
+                    synchronized (mCameraLock) {
+                        mCamera.setOneShotPreviewCallback(new Camera.PreviewCallback() {
+                            @Override
+                            public void onPreviewFrame(byte[] data, Camera camera) {
+                                Camera.Parameters parameters = camera.getParameters();
+                                int width = parameters.getPreviewSize().width;
+                                int height = parameters.getPreviewSize().height;
+                                int rotation = calculateCaptureRotation();
+
+                                YuvOperator yuvOperator = new YuvOperator(data, width, height);
+                                yuvOperator.rotate(rotation);
+                                data = yuvOperator.getYuvData();
+
+                                int yuvOutputWidth = width;
+                                int yuvOutputHeight = height;
+                                if (rotation == 90 || rotation == 270) {
+                                    yuvOutputWidth = height;
+                                    yuvOutputHeight = width;
+                                }
+
+                                YuvImage yuvImage = new YuvImage(data, parameters.getPreviewFormat(), yuvOutputWidth, yuvOutputHeight, null);
+                                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
+                                callback.imageCaptured(out.toByteArray());
+                            }
+                        });
+                        break;
+                    }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.imageCaptured(null);
         }
     }
 
