@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.MediaController;
@@ -37,6 +38,9 @@ public class PreviewActivity extends AppCompatActivity {
 
     @BindView(R.id.captureLatency)
     TextView captureLatency;
+
+    @BindView(R.id.btn_finish)
+    Button btnFinish;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -76,12 +80,20 @@ public class PreviewActivity extends AppCompatActivity {
                 }
             });
             //videoView.start();
+
         }
 
         else {
             finish();
             return;
         }
+
+        btnFinish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     private void setupToolbar() {

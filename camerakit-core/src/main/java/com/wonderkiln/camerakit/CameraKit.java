@@ -61,6 +61,10 @@ public class CameraKit {
         static final boolean DEFAULT_CROP_OUTPUT = false;
         static final boolean DEFAULT_DOUBLE_TAP_TO_TOGGLE_FACING = false;
         static final boolean DEFAULT_ADJUST_VIEW_BOUNDS = false;
+        static final int DEFAULT_PREVIEW_WIDTH = 0;
+        static final int DEFAULT_PREVIEW_HEIGHT = 0;
+        static final int DEFAULT_CAPTURE_WIDTH = 0;
+        static final int DEFAULT_CAPTURE_HEIGHT = 0;
 
     }
 

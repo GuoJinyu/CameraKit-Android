@@ -78,6 +78,12 @@ public class CameraView extends CameraViewLayout {
 
     private boolean mAdjustViewBounds;
 
+    private int mPreviewWidth;
+    private int mPreviewHeight;
+    private int mCaptureWidth;
+    private int mCaptureHeight;
+
+
     private DisplayOrientationDetector mDisplayOrientationDetector;
     private CameraImpl mCameraImpl;
 
@@ -120,6 +126,10 @@ public class CameraView extends CameraViewLayout {
                 mDoubleTapToToggleFacing = a.getBoolean(R.styleable.CameraView_ckDoubleTapToToggleFacing, CameraKit.Defaults.DEFAULT_DOUBLE_TAP_TO_TOGGLE_FACING);
                 mLockVideoAspectRatio = a.getBoolean(R.styleable.CameraView_ckLockVideoAspectRatio, false);
                 mAdjustViewBounds = a.getBoolean(R.styleable.CameraView_android_adjustViewBounds, CameraKit.Defaults.DEFAULT_ADJUST_VIEW_BOUNDS);
+                mPreviewWidth = a.getInteger(R.styleable.CameraView_ckPreviewWidth, CameraKit.Defaults.DEFAULT_PREVIEW_WIDTH);
+                mPreviewHeight = a.getInteger(R.styleable.CameraView_ckPreviewHeight, CameraKit.Defaults.DEFAULT_PREVIEW_HEIGHT);
+                mCaptureWidth = a.getInteger(R.styleable.CameraView_ckCaptureWidth, CameraKit.Defaults.DEFAULT_CAPTURE_WIDTH);
+                mCaptureHeight = a.getInteger(R.styleable.CameraView_ckCaptureHeight, CameraKit.Defaults.DEFAULT_CAPTURE_HEIGHT);
             } finally {
                 a.recycle();
             }
@@ -149,6 +159,10 @@ public class CameraView extends CameraViewLayout {
         setVideoQuality(mVideoQuality);
         setVideoBitRate(mVideoBitRate);
         setLockVideoAspectRatio(mLockVideoAspectRatio);
+        setCaptureHeight(mCaptureHeight);
+        setCaptureWidth(mCaptureWidth);
+        setPreviewHeight(mPreviewHeight);
+        setPreviewWidth(mPreviewWidth);
 
         if (!isInEditMode()) {
             mDisplayOrientationDetector = new DisplayOrientationDetector(context) {
@@ -543,6 +557,50 @@ public class CameraView extends CameraViewLayout {
 
     public void setRequestedFps(float requestedFps) {
         mCameraImpl.setRequestedFps(requestedFps);
+    }
+
+    public int getPreviewWidth() {
+        return mPreviewWidth;
+    }
+
+    public void setPreviewWidth(int mPreviewWidth) {
+        this.mPreviewWidth = mPreviewWidth;
+        if (mPreviewWidth != 0 && mPreviewHeight != 0 && mCameraImpl != null) {
+            mCameraImpl.setPreviewResolution(mPreviewWidth, mPreviewHeight);
+        }
+    }
+
+    public int getPreviewHeight() {
+        return mPreviewHeight;
+    }
+
+    public void setPreviewHeight(int mPreviewHeight) {
+        this.mPreviewHeight = mPreviewHeight;
+        if (mPreviewWidth != 0 && mPreviewHeight != 0 && mCameraImpl != null) {
+            mCameraImpl.setPreviewResolution(mPreviewWidth, mPreviewHeight);
+        }
+    }
+
+    public int getCaptureWidth() {
+        return mCaptureWidth;
+    }
+
+    public void setCaptureWidth(int mCaptureWidth) {
+        this.mCaptureWidth = mCaptureWidth;
+        if (mCaptureWidth != 0 && mCaptureHeight != 0 && mCameraImpl != null) {
+            mCameraImpl.setCaptureResolution(mCaptureWidth, mCaptureHeight);
+        }
+    }
+
+    public int getCaptureHeight() {
+        return mCaptureHeight;
+    }
+
+    public void setCaptureHeight(int mCaptureHeight) {
+        this.mCaptureHeight = mCaptureHeight;
+        if (mCaptureWidth != 0 && mCaptureHeight != 0 && mCameraImpl != null) {
+            mCameraImpl.setCaptureResolution(mCaptureWidth, mCaptureHeight);
+        }
     }
 
 }

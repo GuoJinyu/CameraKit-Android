@@ -59,6 +59,11 @@
         <attr name="ckDoubleTapToToggleFacing" format="boolean" />
         <attr name="ckLockVideoAspectRatio" format="boolean" />
 
+        <attr name="ckPreviewWidth" format="integer" />
+        <attr name="ckPreviewHeight" format="integer" />
+        <attr name="ckCaptureWidth" format="integer" />
+        <attr name="ckCaptureHeight" format="integer" />
+
         <attr name="android:adjustViewBounds" />
 
     </declare-styleable>

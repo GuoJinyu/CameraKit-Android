@@ -17,6 +17,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (outputFile != null && outputFileName.endsWith('.aar')) {
+                outputFileName = "camerakit-${variant.flavorName}-v${defaultConfig.versionName}.aar"
+            }
+        }
+    }
     sourceSets {
         main.java.srcDirs += 'src/main/base'
         main.java.srcDirs += 'src/main/api16'
@@ -30,6 +38,12 @@ android {
         cmake {
             path 'src/main/cpp/CMakeLists.txt'
         }
+    }
+
+    flavorDimensions "vendor"
+    productFlavors {
+        egg {}
+        normal {}
     }
 }
 

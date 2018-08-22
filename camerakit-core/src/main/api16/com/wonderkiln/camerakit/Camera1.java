@@ -547,6 +547,11 @@ public class Camera1 extends CameraImpl {
     @Override
     Size getCaptureResolution() {
         if (mCaptureSize == null && mCameraParameters != null) {
+//            if ("egg".equals(BuildConfig.FLAVOR)) {
+//                // for egg
+//                mCaptureSize = new Size(2592, 1944);
+//                return mCaptureSize;
+//            }
             TreeSet<Size> sizes = new TreeSet<>();
             for (Camera.Size size : mCameraParameters.getSupportedPictureSizes()) {
                 sizes.add(new Size(size.width, size.height));
@@ -621,6 +626,11 @@ public class Camera1 extends CameraImpl {
     @Override
     Size getPreviewResolution() {
         if (mPreviewSize == null && mCameraParameters != null) {
+//            if ("egg".equals(BuildConfig.FLAVOR)) {
+//                // for egg
+//                mPreviewSize = new Size(1920, 1080);
+//                return mPreviewSize;
+//            }
             TreeSet<Size> sizes = new TreeSet<>();
             for (Camera.Size size : mCameraParameters.getSupportedPreviewSizes()) {
                 sizes.add(new Size(size.width, size.height));
@@ -717,6 +727,16 @@ public class Camera1 extends CameraImpl {
         mRequestedFps = requestedFps;
     }
 
+    @Override
+    void setPreviewResolution(int width, int height) {
+        mPreviewSize = new Size(width, height);
+    }
+
+    @Override
+    void setCaptureResolution(int width, int height) {
+        mCaptureSize = new Size(width, height);
+    }
+
     // Internal:
 
     private void openCamera() {
@@ -787,8 +807,8 @@ public class Camera1 extends CameraImpl {
                 mCamera.release();
                 mCamera = null;
                 mCameraParameters = null;
-                mPreviewSize = null;
-                mCaptureSize = null;
+//                mPreviewSize = null;
+//                mCaptureSize = null;
                 mVideoSize = null;
 
                 mEventDispatcher.dispatch(new CameraKitEvent(CameraKitEvent.TYPE_CAMERA_CLOSE));
@@ -894,6 +914,7 @@ public class Camera1 extends CameraImpl {
                     invertPreviewSizes ? getPreviewResolution().getWidth() : getPreviewResolution().getHeight()
             );
 
+
 //            final int[] previewFpsRange = selectPreviewFpsRange(mCamera, mRequestedFps);
 //            if (previewFpsRange != null) {
 //                mCameraParameters.setPreviewFpsRange(
@@ -946,6 +967,9 @@ public class Camera1 extends CameraImpl {
             setZoom(mZoom);
         }
 
+//        mCameraParameters.setPreviewSize(1920, 1080);
+//        mCameraParameters.setPictureSize(1920, 1080);
+
         setParameters(mCameraParameters);
 
         if (haveToReadjust && currentTry < 100) {
@@ -967,7 +991,9 @@ public class Camera1 extends CameraImpl {
 
     private TreeSet<AspectRatio> findCommonAspectRatios(List<Camera.Size> previewSizes, List<Camera.Size> pictureSizes) {
         Set<AspectRatio> previewAspectRatios = new HashSet<>();
+        //Log.d("acker", "预览size");
         for (Camera.Size size : previewSizes) {
+            //Log.d("acker", size.width + "x" + size.height);
             AspectRatio deviceRatio = AspectRatio.of(CameraKit.Internal.screenHeight, CameraKit.Internal.screenWidth);
             AspectRatio previewRatio = AspectRatio.of(size.width, size.height);
             if (deviceRatio.equals(previewRatio)) {
@@ -976,7 +1002,9 @@ public class Camera1 extends CameraImpl {
         }
 
         Set<AspectRatio> captureAspectRatios = new HashSet<>();
+        //Log.d("acker", "照片size");
         for (Camera.Size size : pictureSizes) {
+            //Log.d("acker", size.width + "x" + size.height);
             captureAspectRatios.add(AspectRatio.of(size.width, size.height));
         }
 

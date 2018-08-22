@@ -60,4 +60,7 @@ abstract class CameraImpl {
 
     abstract void setRequestedFps(float requestedFps);
 
+    abstract void setPreviewResolution(int width,int height);
+    abstract void setCaptureResolution(int width,int height);
+
 }
