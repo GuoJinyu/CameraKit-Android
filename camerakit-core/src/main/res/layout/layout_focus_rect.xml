@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.wonderkiln.camerakit.FocusRectView
+        android:id="@+id/view_focus_rect"
+        android:layout_width="66.67dp"
+        android:layout_height="66.67dp" />
+
+</FrameLayout>

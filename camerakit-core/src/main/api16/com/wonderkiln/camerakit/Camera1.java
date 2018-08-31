@@ -127,25 +127,29 @@ public class Camera1 extends CameraImpl {
 
     @Override
     void start() {
+        Log.d(TAG, "starting");
         try {
             setFacing(mFacing);
             openCamera();
             if (mCamera != null && mPreview.isReady()) {
+                Log.d(TAG, "mCamera != null && mPreview.isReady()");
                 setDisplayAndDeviceOrientation();
                 setupPreview();
                 mCamera.startPreview();
                 mShowingPreview = true;
             }
         } catch (Exception e) {
-            //do nothing.
+            e.printStackTrace();
         }
     }
 
     @Override
     void stop() {
+        Log.d(TAG, "stopping");
         try {
             mHandler.removeCallbacksAndMessages(null);
             if (mCamera != null) {
+                Log.d(TAG, "mCamera != null");
                 try {
                     mCamera.stopPreview();
                 } catch (Exception e) {
@@ -288,6 +292,7 @@ public class Camera1 extends CameraImpl {
 
     @Override
     void setZoom(float zoomFactor) {
+        Log.d(TAG,zoomFactor+" zoomFactor");
         synchronized (mCameraLock) {
             this.mZoom = zoomFactor;
             if (zoomFactor <= 1) {
@@ -299,10 +304,11 @@ public class Camera1 extends CameraImpl {
             if (mCameraParameters != null && mCameraParameters.isZoomSupported()) {
                 int zoomPercent = (int) (mZoom * 100);
                 mCameraParameters.setZoom(getZoomForPercent(zoomPercent));
+                Log.d(TAG,getZoomForPercent(zoomPercent)+" getZoomForPercent(zoomPercent)");
                 setParameters(mCameraParameters);
-
                 float maxZoom = mCameraParameters.getZoomRatios().get(mCameraParameters.getZoomRatios().size() - 1) / 100f;
                 if (mZoom > maxZoom) mZoom = maxZoom;
+                Log.d(TAG,mZoom +" mZoom");
 
             }
         }
@@ -411,6 +417,18 @@ public class Camera1 extends CameraImpl {
     }
 
     @Override
+    void setZoomDirectly(float zoom) {
+        if (mCameraParameters != null && mCameraParameters.isZoomSupported()) {
+            int zoomReal = (int) (mCameraParameters.getMaxZoom() * zoom);
+            if (zoomReal > mCameraParameters.getMaxZoom()) {
+                zoomReal = mCameraParameters.getMaxZoom();
+            }
+            mCameraParameters.setZoom(zoomReal);
+            setParameters(mCameraParameters);
+        }
+    }
+
+    @Override
     void setLockVideoAspectRatio(boolean lockVideoAspectRatio) {
         this.mLockVideoAspectRatio = lockVideoAspectRatio;
     }
@@ -418,6 +436,7 @@ public class Camera1 extends CameraImpl {
     @Override
     void captureImage(final ImageCapturedCallback callback) {
         if (!mShowingPreview) {
+            Log.d(TAG, "mShowingPreview:" + mShowingPreview);
             //If camera hasn't start preview, then return.
             callback.imageCaptured(null);
             return;
@@ -425,41 +444,51 @@ public class Camera1 extends CameraImpl {
         try {
             switch (mMethod) {
                 case METHOD_STANDARD:
+                    Log.d(TAG, "METHOD_STANDARD");
                     synchronized (mCameraLock) {
                         // Null check required for camera here as is briefly null when View is detached
+                        Log.d(TAG, "mCameraLock");
                         if (!capturingImage && mCamera != null) {
 
                             // Set boolean to wait for image callback
+                            Log.w(TAG, "capturingImage to be true");
                             capturingImage = true;
 
                             // Set the captureRotation right before taking a picture so it's accurate
                             int captureRotation = calculateCaptureRotation();
                             mCameraParameters.setRotation(captureRotation);
                             setParameters(mCameraParameters);
-
+                            Log.d(TAG, "ready for takePicture");
                             mCamera.takePicture(null, null, null,
                                     new Camera.PictureCallback() {
                                         @Override
                                         public void onPictureTaken(byte[] data, Camera camera) {
+                                            Log.d(TAG, "imageCaptured");
                                             callback.imageCaptured(data);
-
                                             // Reset capturing state to allow photos to be taken
+                                            Log.w(TAG, "capturingImage to be false");
                                             capturingImage = false;
-
-                                            synchronized (mCameraLock) {
-                                                if (isCameraOpened()) {
-                                                    try {
-                                                        stop();
-                                                        start();
-                                                    } catch (Exception e) {
-                                                        notifyErrorListener(e);
-                                                    }
-                                                }
-                                            }
+// for egg, do not need restart here
+//                                            synchronized (mCameraLock) {
+//                                                if (isCameraOpened()) {
+//                                                    try {
+//                                                        stop();
+//                                                        start();
+//                                                    } catch (Exception e) {
+//                                                        notifyErrorListener(e);
+//                                                    }
+//                                                }
+//                                            }
                                         }
                                     });
                         } else {
                             Log.w(TAG, "Unable, waiting for picture to be taken");
+                            if (capturingImage) {
+                                Log.w(TAG, "capturingImage:" + capturingImage);
+                            }
+                            if (mCamera == null) {
+                                Log.w(TAG, "mCamera:null");
+                            }
                             callback.imageCaptured(null);
                         }
                         break;
@@ -744,7 +773,7 @@ public class Camera1 extends CameraImpl {
             if (mCamera != null) {
                 releaseCamera();
             }
-
+            Log.d(TAG, "mCamera to be open in openCamera()");
             mCamera = Camera.open(mCameraId);
             mCameraParameters = mCamera.getParameters();
 
@@ -805,6 +834,7 @@ public class Camera1 extends CameraImpl {
             if (mCamera != null) {
                 mCamera.lock();
                 mCamera.release();
+                Log.d(TAG, "mCamera to be null in releaseCamera()");
                 mCamera = null;
                 mCameraParameters = null;
 //                mPreviewSize = null;
@@ -1152,6 +1182,7 @@ public class Camera1 extends CameraImpl {
         return camcorderProfile;
     }
 
+    @Override
     void setTapToAutofocusListener(Camera.AutoFocusCallback callback) {
         if (this.mFocus != FOCUS_TAP) {
             throw new IllegalArgumentException("Please set the camera to FOCUS_TAP.");
@@ -1170,6 +1201,14 @@ public class Camera1 extends CameraImpl {
 
     private void resetFocus(final boolean success, final Camera camera) {
         mHandler.removeCallbacksAndMessages(null);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mAutofocusCallback != null) {
+                    mAutofocusCallback.onAutoFocus(success, mCamera);
+                }
+            }
+        });
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -1186,9 +1225,7 @@ public class Camera1 extends CameraImpl {
                             setParameters(parameters);
                         }
 
-                        if (mAutofocusCallback != null) {
-                            mAutofocusCallback.onAutoFocus(success, mCamera);
-                        }
+
                     }
                 }
             }

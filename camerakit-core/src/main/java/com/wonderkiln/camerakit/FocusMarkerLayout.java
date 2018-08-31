@@ -12,10 +12,11 @@ import android.widget.ImageView;
 
 import com.wonderkiln.camerakit.core.R;
 
-public class FocusMarkerLayout extends FrameLayout {
+public class FocusMarkerLayout extends FocusLayout {
 
     private FrameLayout mFocusMarkerContainer;
     private ImageView mFill;
+    private ImageView mOutline;
 
     public FocusMarkerLayout(@NonNull Context context) {
         this(context, null);
@@ -27,11 +28,13 @@ public class FocusMarkerLayout extends FrameLayout {
 
         mFocusMarkerContainer = findViewById(R.id.focusMarkerContainer);
         mFill = findViewById(R.id.fill);
-
+        mOutline = findViewById(R.id.outline);
         mFocusMarkerContainer.setAlpha(0);
     }
 
+    @Override
     public void focus(float mx, float my) {
+        mOutline.setImageResource(R.drawable.focus_marker_outline);
         mx *= getWidth();
         my *= getHeight();
         int x = (int) (mx - mFocusMarkerContainer.getWidth() / 2);
@@ -56,7 +59,6 @@ public class FocusMarkerLayout extends FrameLayout {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        mFocusMarkerContainer.animate().alpha(0).setStartDelay(750).setDuration(800).setListener(null).start();
                     }
                 }).start();
 
@@ -69,6 +71,13 @@ public class FocusMarkerLayout extends FrameLayout {
                     }
                 }).start();
 
+    }
+
+    @Override
+    public void focused(boolean focused) {
+        int res = focused ? R.drawable.focused_marker_outline : R.drawable.unfocused_marker_outline;
+        mOutline.setImageResource(res);
+        mFocusMarkerContainer.animate().alpha(0).setStartDelay(2000).setDuration(800).setListener(null).start();
     }
 
 

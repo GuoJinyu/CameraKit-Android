@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.hardware.display.DisplayManagerCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -37,6 +38,8 @@ import static com.wonderkiln.camerakit.CameraKit.Constants.PERMISSIONS_PICTURE;
 import static com.wonderkiln.camerakit.CameraKit.Constants.PERMISSIONS_STRICT;
 
 public class CameraView extends CameraViewLayout {
+
+    private static final String TAG = CameraView.class.getSimpleName();
 
     private static Handler sWorkerHandler;
 
@@ -93,7 +96,7 @@ public class CameraView extends CameraViewLayout {
 
     private EventDispatcher mEventDispatcher;
 
-    private FocusMarkerLayout focusMarkerLayout;
+    private FocusLayout focusLayout;
 
     public CameraView(@NonNull Context context) {
         this(context, null);
@@ -173,9 +176,27 @@ public class CameraView extends CameraViewLayout {
                 }
             };
 
-            focusMarkerLayout = new FocusMarkerLayout(getContext());
-            addView(focusMarkerLayout);
+            switch (mFocus) {
+                case CameraKit.Constants.FOCUS_TAP_WITH_MARKER:
+                    focusLayout = new FocusMarkerLayout(getContext());
+                    addView(focusLayout);
+                    break;
+                case CameraKit.Constants.FOCUS_TAP_WITH_RECT:
+                    focusLayout = new FocusRectLayout(getContext());
+                    addView(focusLayout);
+                    break;
+                default:
+                    break;
+            }
         }
+        mCameraImpl.setTapToAutofocusListener(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                if (mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_RECT) {
+                    focusLayout.focused(success);
+                }
+            }
+        });
     }
 
     @Override
@@ -246,6 +267,7 @@ public class CameraView extends CameraViewLayout {
             return;
         }
         mIsStarted = true;
+        resetZoomDirectly();
         int cameraCheck = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA);
         int audioCheck = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO);
 
@@ -308,16 +330,24 @@ public class CameraView extends CameraViewLayout {
 
     @Override
     protected void onZoom(float modifier, boolean start) {
+        Log.d(TAG, modifier + " modifier");
         if (mPinchToZoom) {
             mCameraImpl.modifyZoom((modifier - 1) * 0.8f + 1);
         }
     }
 
     @Override
+    protected void onZoomDirectly(float zoom) {
+        if (mPinchToZoom) {
+            mCameraImpl.setZoomDirectly(zoom);
+        }
+    }
+
+    @Override
     protected void onTapToFocus(float x, float y) {
-        if (mFocus == CameraKit.Constants.FOCUS_TAP || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER) {
-            if (mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER) {
-                focusMarkerLayout.focus(x, y);
+        if (mFocus == CameraKit.Constants.FOCUS_TAP || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_RECT) {
+            if (mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_RECT) {
+                focusLayout.focus(x, y);
             }
 
             float px = x - getPreviewImpl().getX();
@@ -373,7 +403,7 @@ public class CameraView extends CameraViewLayout {
 
     public void setFocus(@Focus int focus) {
         this.mFocus = focus;
-        if (this.mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER) {
+        if (this.mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_RECT) {
             mCameraImpl.setFocus(CameraKit.Constants.FOCUS_TAP);
             return;
         }

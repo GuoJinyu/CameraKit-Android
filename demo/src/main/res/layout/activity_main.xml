@@ -23,7 +23,7 @@
                 app:ckDoubleTapToToggleFacing="true"
                 app:ckFacing="back"
                 app:ckFlash="off"
-                app:ckFocus="tapWithMarker"
+                app:ckFocus="tapWithRect"
                 app:ckJpegQuality="100"
                 app:ckMethod="standard"
                 app:ckPinchToZoom="true"

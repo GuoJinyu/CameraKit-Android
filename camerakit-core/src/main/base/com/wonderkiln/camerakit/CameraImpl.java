@@ -30,6 +30,7 @@ abstract class CameraImpl {
     abstract void setLockVideoAspectRatio(boolean lockVideoAspectRatio);
 
     abstract void setZoom(float zoomFactor);
+    abstract void setZoomDirectly(float zoom);
     abstract void modifyZoom(float modifier);
     abstract void setFocusArea(float x, float y);
 
@@ -62,5 +63,7 @@ abstract class CameraImpl {
 
     abstract void setPreviewResolution(int width,int height);
     abstract void setCaptureResolution(int width,int height);
+
+    abstract void setTapToAutofocusListener(Camera.AutoFocusCallback callback);
 
 }

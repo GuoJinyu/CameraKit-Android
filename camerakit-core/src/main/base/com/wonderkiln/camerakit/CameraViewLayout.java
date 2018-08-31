@@ -9,10 +9,13 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.FrameLayout;
 
+import com.wonderkiln.camerakit.core.BuildConfig;
+
 public abstract class CameraViewLayout extends FrameLayout {
 
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
+    private float zoom = 0;
 
     public CameraViewLayout(@NonNull Context context) {
         this(context, null);
@@ -31,7 +34,9 @@ public abstract class CameraViewLayout extends FrameLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         gestureDetector.onTouchEvent(event);
-        scaleGestureDetector.onTouchEvent(event);
+        if (!"egg".equals(BuildConfig.FLAVOR)) {
+            scaleGestureDetector.onTouchEvent(event);
+        }
         return true;
     }
 
@@ -46,6 +51,9 @@ public abstract class CameraViewLayout extends FrameLayout {
 
     protected abstract void onZoom(float zoom, boolean start);
 
+    protected abstract void onZoomDirectly(float zoom);
+
+
     protected abstract void onTapToFocus(float x, float y);
 
     protected abstract void onToggleFacing();
@@ -54,7 +62,18 @@ public abstract class CameraViewLayout extends FrameLayout {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            onToggleFacing();
+            if ("egg".equals(BuildConfig.FLAVOR)) {
+                if (zoom == 0) {
+                    zoom = 0.2f;
+                } else if (zoom == 0.2f) {
+                    zoom = 0.6f;
+                } else {
+                    zoom = 0;
+                }
+                onZoomDirectly(zoom);
+            } else {
+                onToggleFacing();
+            }
             return super.onDoubleTap(e);
         }
 
@@ -65,17 +84,21 @@ public abstract class CameraViewLayout extends FrameLayout {
         }
     };
 
+    protected void resetZoomDirectly() {
+        zoom = 0;
+    }
+
     private ScaleGestureDetector.OnScaleGestureListener onScaleGestureListener = new ScaleGestureDetector.OnScaleGestureListener() {
 
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
-            onZoom(scaleGestureDetector.getScaleFactor(), false);
+            onZoom(scaleGestureDetector.getScaleFactor() * 2, false);
             return true;
         }
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector) {
-            onZoom(scaleGestureDetector.getScaleFactor(), true);
+            onZoom(scaleGestureDetector.getScaleFactor() * 2, true);
             return true;
         }
 

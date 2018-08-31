@@ -20,6 +20,7 @@
             <enum name="continuous" value="1" />
             <enum name="tap" value="2" />
             <enum name="tapWithMarker" value="3" />
+            <enum name="tapWithRect" value="4" />
         </attr>
 
         <attr name="ckPinchToZoom" format="boolean" />
