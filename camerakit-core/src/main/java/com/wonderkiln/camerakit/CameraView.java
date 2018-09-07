@@ -350,8 +350,8 @@ public class CameraView extends CameraViewLayout {
                 focusLayout.focus(x, y);
             }
 
-            float px = x - getPreviewImpl().getX();
-            float py = y - getPreviewImpl().getY();
+            float px = x * getPreviewImpl().getWidth() - getPreviewImpl().getX();
+            float py = y * getPreviewImpl().getHeight() - getPreviewImpl().getY();
             mCameraImpl.setFocusArea(px / (float) getPreviewImpl().getWidth(), py / (float) getPreviewImpl().getHeight());
         }
     }

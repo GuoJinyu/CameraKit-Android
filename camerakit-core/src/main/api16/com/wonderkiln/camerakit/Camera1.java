@@ -91,6 +91,8 @@ public class Camera1 extends CameraImpl {
 
     private float mRequestedFps = 30.0f;
 
+    private List<Camera.Area> curFocusArea;
+
     Camera1(EventDispatcher eventDispatcher, PreviewImpl preview) {
         super(eventDispatcher, preview);
 
@@ -292,7 +294,7 @@ public class Camera1 extends CameraImpl {
 
     @Override
     void setZoom(float zoomFactor) {
-        Log.d(TAG,zoomFactor+" zoomFactor");
+        Log.d(TAG, zoomFactor + " zoomFactor");
         synchronized (mCameraLock) {
             this.mZoom = zoomFactor;
             if (zoomFactor <= 1) {
@@ -304,11 +306,11 @@ public class Camera1 extends CameraImpl {
             if (mCameraParameters != null && mCameraParameters.isZoomSupported()) {
                 int zoomPercent = (int) (mZoom * 100);
                 mCameraParameters.setZoom(getZoomForPercent(zoomPercent));
-                Log.d(TAG,getZoomForPercent(zoomPercent)+" getZoomForPercent(zoomPercent)");
+                Log.d(TAG, getZoomForPercent(zoomPercent) + " getZoomForPercent(zoomPercent)");
                 setParameters(mCameraParameters);
                 float maxZoom = mCameraParameters.getZoomRatios().get(mCameraParameters.getZoomRatios().size() - 1) / 100f;
                 if (mZoom > maxZoom) mZoom = maxZoom;
-                Log.d(TAG,mZoom +" mZoom");
+                Log.d(TAG, mZoom + " mZoom");
 
             }
         }
@@ -354,45 +356,45 @@ public class Camera1 extends CameraImpl {
     void setFocusArea(float x, float y) {
         try {
             synchronized (mCameraLock) {
-                if (mCamera != null && mShowingPreview) {
-                    Camera.Parameters parameters = getCameraParameters();
-                    if (parameters == null) return;
+                if (mCamera != null && mShowingPreview && mCameraParameters != null) {
+//                    Camera.Parameters parameters = getCameraParameters();
+//                    if (parameters == null) return;
 
-                    String focusMode = parameters.getFocusMode();
+                    String focusMode = mCameraParameters.getFocusMode();
                     Rect rect = calculateFocusArea(x, y);
-
                     List<Camera.Area> meteringAreas = new ArrayList<>();
                     meteringAreas.add(new Camera.Area(rect, getFocusMeteringAreaWeight()));
-                    if (parameters.getMaxNumFocusAreas() != 0 && focusMode != null &&
+                    curFocusArea = meteringAreas;
+                    if (mCameraParameters.getMaxNumFocusAreas() != 0 && focusMode != null &&
                             (focusMode.equals(Camera.Parameters.FOCUS_MODE_AUTO) ||
                                     focusMode.equals(Camera.Parameters.FOCUS_MODE_MACRO) ||
                                     focusMode.equals(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE) ||
                                     focusMode.equals(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
                             ) {
-                        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                        parameters.setFocusAreas(meteringAreas);
-                        if (parameters.getMaxNumMeteringAreas() > 0) {
-                            parameters.setMeteringAreas(meteringAreas);
+                        mCameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                        mCameraParameters.setFocusAreas(meteringAreas);
+                        if (mCameraParameters.getMaxNumMeteringAreas() > 0) {
+                            mCameraParameters.setMeteringAreas(meteringAreas);
                         }
-                        if (!parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                        if (!mCameraParameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                             return; //cannot autoFocus
                         }
-                        setParameters(parameters);
+                        setParameters(mCameraParameters);
                         mCamera.autoFocus(new Camera.AutoFocusCallback() {
                             @Override
                             public void onAutoFocus(boolean success, Camera camera) {
                                 resetFocus(success, camera);
                             }
                         });
-                    } else if (parameters.getMaxNumMeteringAreas() > 0) {
-                        if (!parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                    } else if (mCameraParameters.getMaxNumMeteringAreas() > 0) {
+                        if (!mCameraParameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                             return; //cannot autoFocus
                         }
-                        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                        parameters.setFocusAreas(meteringAreas);
-                        parameters.setMeteringAreas(meteringAreas);
+                        mCameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                        mCameraParameters.setFocusAreas(meteringAreas);
+                        mCameraParameters.setMeteringAreas(meteringAreas);
 
-                        setParameters(parameters);
+                        setParameters(mCameraParameters);
                         mCamera.autoFocus(new Camera.AutoFocusCallback() {
                             @Override
                             public void onAutoFocus(boolean success, Camera camera) {
@@ -448,7 +450,7 @@ public class Camera1 extends CameraImpl {
                     synchronized (mCameraLock) {
                         // Null check required for camera here as is briefly null when View is detached
                         Log.d(TAG, "mCameraLock");
-                        if (!capturingImage && mCamera != null) {
+                        if (!capturingImage && mCamera != null && mCameraParameters != null) {
 
                             // Set boolean to wait for image callback
                             Log.w(TAG, "capturingImage to be true");
@@ -456,6 +458,8 @@ public class Camera1 extends CameraImpl {
 
                             // Set the captureRotation right before taking a picture so it's accurate
                             int captureRotation = calculateCaptureRotation();
+//                            mCameraParameters = getCameraParameters();
+//                            if (mCameraParameters == null) return;
                             mCameraParameters.setRotation(captureRotation);
                             setParameters(mCameraParameters);
                             Log.d(TAG, "ready for takePicture");
@@ -481,6 +485,7 @@ public class Camera1 extends CameraImpl {
 //                                            }
                                         }
                                     });
+                            //}
                         } else {
                             Log.w(TAG, "Unable, waiting for picture to be taken");
                             if (capturingImage) {
@@ -1213,19 +1218,17 @@ public class Camera1 extends CameraImpl {
             @Override
             public void run() {
                 synchronized (mCameraLock) {
-                    if (mCamera != null) {
+                    if (mCamera != null && mCameraParameters != null) {
                         mCamera.cancelAutoFocus();
-                        Camera.Parameters parameters = getCameraParameters();
-                        if (parameters == null) return;
+//                        Camera.Parameters parameters = getCameraParameters();
+//                        if (parameters == null) return;
 
-                        if (parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE) {
-                            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-                            parameters.setFocusAreas(null);
-                            parameters.setMeteringAreas(null);
-                            setParameters(parameters);
+                        if (!mCameraParameters.getFocusMode().equals(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                            mCameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                            mCameraParameters.setFocusAreas(null);
+                            mCameraParameters.setMeteringAreas(null);
+                            setParameters(mCameraParameters);
                         }
-
-
                     }
                 }
             }
