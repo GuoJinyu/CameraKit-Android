@@ -16,6 +16,7 @@ public abstract class CameraViewLayout extends FrameLayout {
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
     private float zoom = 0;
+    private float oldDist = 1f;
 
     public CameraViewLayout(@NonNull Context context) {
         this(context, null);
@@ -33,11 +34,35 @@ public abstract class CameraViewLayout extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        gestureDetector.onTouchEvent(event);
-        if (!"egg".equals(BuildConfig.FLAVOR)) {
-            scaleGestureDetector.onTouchEvent(event);
+        if (event.getPointerCount() == 1) {
+            gestureDetector.onTouchEvent(event);
+        } else {
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    oldDist = getFingerSpacing(event);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float newDist = getFingerSpacing(event);
+                    if (newDist > oldDist) {
+                        handleZoom(true);
+                    } else if (newDist < oldDist) {
+                        handleZoom(false);
+                    }
+                    oldDist = newDist;
+                    break;
+            }
         }
+//        if (!"egg".equals(BuildConfig.FLAVOR)) {
+//            scaleGestureDetector.onTouchEvent(event);
+//        }
+
         return true;
+    }
+
+    private static float getFingerSpacing(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.sqrt(x * x + y * y);
     }
 
     @Override
@@ -53,6 +78,7 @@ public abstract class CameraViewLayout extends FrameLayout {
 
     protected abstract void onZoomDirectly(float zoom);
 
+    protected abstract void handleZoom(boolean isZoomIn);
 
     protected abstract void onTapToFocus(float x, float y);
 

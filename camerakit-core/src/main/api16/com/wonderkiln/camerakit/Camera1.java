@@ -323,6 +323,25 @@ public class Camera1 extends CameraImpl {
         }
     }
 
+    @Override
+    void setZoom(boolean isZoomIn) {
+        if (mCamera != null && mCameraParameters != null) {
+            if (mCameraParameters.isZoomSupported()) {
+                int maxZoom = mCameraParameters.getMaxZoom();
+                int zoom = mCameraParameters.getZoom();
+                if (isZoomIn && zoom < maxZoom) {
+                    zoom++;
+                } else if (zoom > 0) {
+                    zoom--;
+                }
+                mCameraParameters.setZoom(zoom);
+                mCamera.setParameters(mCameraParameters);
+            } else {
+                Log.i(TAG, "zoom not supported");
+            }
+        }
+    }
+
     private int getZoomForPercent(int zoomPercent) {
         List<Integer> zoomRatios = mCameraParameters.getZoomRatios();
         int lowerIndex = -1;

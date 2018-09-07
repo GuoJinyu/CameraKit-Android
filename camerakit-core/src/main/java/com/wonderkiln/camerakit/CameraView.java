@@ -344,6 +344,11 @@ public class CameraView extends CameraViewLayout {
     }
 
     @Override
+    protected void handleZoom(boolean isZoomIn) {
+        mCameraImpl.setZoom(isZoomIn);
+    }
+
+    @Override
     protected void onTapToFocus(float x, float y) {
         if (mFocus == CameraKit.Constants.FOCUS_TAP || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_RECT) {
             if (mFocus == CameraKit.Constants.FOCUS_TAP_WITH_MARKER || mFocus == CameraKit.Constants.FOCUS_TAP_WITH_RECT) {

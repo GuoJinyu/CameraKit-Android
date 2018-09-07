@@ -32,6 +32,7 @@ abstract class CameraImpl {
     abstract void setZoom(float zoomFactor);
     abstract void setZoomDirectly(float zoom);
     abstract void modifyZoom(float modifier);
+    abstract void setZoom(boolean isZoomIn);
     abstract void setFocusArea(float x, float y);
 
     abstract void captureImage(ImageCapturedCallback callback);
