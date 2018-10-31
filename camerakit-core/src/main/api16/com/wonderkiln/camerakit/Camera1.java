@@ -335,7 +335,7 @@ public class Camera1 extends CameraImpl {
                     zoom--;
                 }
                 mCameraParameters.setZoom(zoom);
-                mCamera.setParameters(mCameraParameters);
+                setParameters(mCameraParameters);
             } else {
                 Log.i(TAG, "zoom not supported");
             }
@@ -549,6 +549,10 @@ public class Camera1 extends CameraImpl {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            if (e.getMessage().equals("takePicture failed")) {
+                Log.w(TAG, "takePicture failed,capturingImage to be true");
+                capturingImage = false;
+            }
             callback.imageCaptured(null);
         }
     }
@@ -872,7 +876,8 @@ public class Camera1 extends CameraImpl {
 
     private void setParameters(Camera.Parameters params) {
         try {
-            mCamera.setParameters(params);
+            if (mCamera != null)
+                mCamera.setParameters(params);
         } catch (Exception e) {
             notifyErrorListener(e);
         }
