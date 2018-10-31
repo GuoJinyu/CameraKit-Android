@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
         applicationId 'com.wonderkiln.camerakit.demo'
         minSdkVersion rootProject.ext.minSdkVersion
@@ -26,11 +25,12 @@ android {
         egg {}
         normal {}
     }
+    buildToolsVersion '28.0.3'
 }
 
 dependencies {
-    compile project(':camerakit')
-    compile 'com.android.support:appcompat-v7:27.0.2'
-    compile 'com.jakewharton:butterknife:8.6.0'
+    implementation project(':camerakit')
+    implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'com.jakewharton:butterknife:8.6.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
 }
