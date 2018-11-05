@@ -26,7 +26,6 @@ android {
 
 dependencies {
     api project(':camerakit-core')
-    implementation 'com.google.android.gms:play-services-vision:11.6.2'
 }
 
 group = 'com.wonderkiln'

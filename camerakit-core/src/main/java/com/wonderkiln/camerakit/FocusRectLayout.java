@@ -53,7 +53,7 @@ public class FocusRectLayout extends FocusLayout {
 
     @Override
     public void focused(boolean focused) {
-        int color = focused ? 0xFF08D7E7 : Color.RED;
+        int color = focused ? 0xFF08D7E7 : 0xFF08D7E7;
         mFocusRectView.setColor(color);
         mFocusRectView.invalidate();
         mFocusRectView.animate().alpha(0).setStartDelay(2000).setDuration(800).setListener(null).start();

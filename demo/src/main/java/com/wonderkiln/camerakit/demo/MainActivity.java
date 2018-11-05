@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -71,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         camera.start();
+        //int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        //Log.d(TAG, "rotation:" + rotation);
     }
 
     @Override
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                                 R.string.about_dialog_message,
                                 BuildConfig.VERSION_NAME,
                                 BuildConfig.VERSION_CODE,
-                                com.wonderkiln.camerakit.BuildConfig.VERSION_NAME
+                                BuildConfig.VERSION_NAME
                         ))
                         .setPositiveButton("DONE", null)
                         .show();
@@ -214,7 +217,9 @@ public class MainActivity extends AppCompatActivity {
     private static abstract class CameraSetting {
 
         abstract String getTitle();
+
         abstract String getValue();
+
         abstract void toggle();
 
     }
@@ -236,7 +241,8 @@ public class MainActivity extends AppCompatActivity {
                     return "still";
                 }
 
-                default: return null;
+                default:
+                    return null;
             }
         }
 

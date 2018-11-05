@@ -39,6 +39,7 @@ public class Camera1 extends CameraImpl {
     private static final int FOCUS_AREA_SIZE_DEFAULT = 300;
     private static final int FOCUS_METERING_AREA_WEIGHT_DEFAULT = 1000;
     private static final int DELAY_MILLIS_BEFORE_RESETTING_FOCUS = 3000;
+    private static final int FOCUS_TIMEOUT = 5000;
     private static final int PREVIEW_BUFFER_POOL_SIZE = 3;
 
     private int mCameraId;
@@ -405,6 +406,12 @@ public class Camera1 extends CameraImpl {
                                 resetFocus(success, camera);
                             }
                         });
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                resetFocus(false, mCamera);
+                            }
+                        }, FOCUS_TIMEOUT);
                     } else if (mCameraParameters.getMaxNumMeteringAreas() > 0) {
                         if (!mCameraParameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                             return; //cannot autoFocus
@@ -420,6 +427,12 @@ public class Camera1 extends CameraImpl {
                                 resetFocus(success, camera);
                             }
                         });
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                resetFocus(false, mCamera);
+                            }
+                        }, FOCUS_TIMEOUT);
                     } else {
                         mCamera.autoFocus(new Camera.AutoFocusCallback() {
                             @Override
@@ -429,6 +442,12 @@ public class Camera1 extends CameraImpl {
                                 }
                             }
                         });
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                resetFocus(false, mCamera);
+                            }
+                        }, FOCUS_TIMEOUT);
                     }
                 }
             }
@@ -801,6 +820,8 @@ public class Camera1 extends CameraImpl {
             if (mCamera != null) {
                 releaseCamera();
             }
+            capturingImage = false;
+            Log.d(TAG, "capturingImage to be false in openCamera()");
             Log.d(TAG, "mCamera to be open in openCamera()");
             mCamera = Camera.open(mCameraId);
             mCameraParameters = mCamera.getParameters();
